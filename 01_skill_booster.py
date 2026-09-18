@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 import sys
 
-filepath = sys.argv[1] if len(sys.argv) > 1 else "stopsign.png"
+filepath = sys.argv[1] if len(sys.argv) > 1 else "panda.png"
 img = cv2.imread(filepath)
 
 COLORSHSV = {
@@ -13,7 +13,8 @@ COLORSHSV = {
     "green": ([35, 80, 80], [85, 255, 255]),
     "blue": ([86, 80, 80], [130, 255, 255]),
     "purple": ([131, 80, 80], [169, 255, 255]),
-    "white": ([0, 0, 200], [179, 30, 255])
+    "white": ([0, 0, 200], [179, 30, 255]),
+    "black": ([0, 0, 0], [179, 255, 50])
 
 }
 
@@ -36,6 +37,7 @@ def createcolormasks(image, title, save=False):
     if save:
         for color, mask in masks.items():
             mask_image = cv2.bitwise_and(image, image, mask=mask)
+            cv2.imshow(f"{color} mask", mask_image)
             filename = f"{color}_mask.jpg"
             cv2.imwrite(filename, mask_image)
             print(f"Mask saved as {filename}")
@@ -57,23 +59,25 @@ def findcenter_object(image,color, mask):
         print(f"{color}: No object found")
         return
     main_contour = max(contours, key=cv2.contourArea)
-    if cv2.contourArea(main_contour) > 500:  # Adjust threshold as needed
+    if cv2.contourArea(main_contour) > 1000:  # Adjust threshold as needed
         M = cv2.moments(main_contour)
         if M["m00"] != 0:
+
             cX = int(M["m10"] / M["m00"])
             cY = int(M["m01"] / M["m00"])
             print(f"{color}: Object found at ({cX}, {cY})")
-            cv2.drawContours(image, [main_contour], -1, (0, 255, 0), 2)
-            cv2.circle(image, (cX, cY), 5, (255, 0, 0), -1)
+            scale = 0.5 + (min(image.shape[:2]) / 1000)
+            cv2.drawContours(image, [main_contour], -1, (0, 255, 0), int(2.5*scale))
+            cv2.circle(image, (cX, cY), int(7*scale), (255, 0, 0), -1)
             cv2.putText(image, f"{color} center", (cX - 20, cY - 20),
-                        cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0), 2)
+                        cv2.FONT_HERSHEY_SIMPLEX, scale*0.8, (0, 0, 0), 2)
         else:
             print(f"{color}: Object found but moments calculation failed")
             return
     else:
         print(f"{color}: Object found but area is too small")
         return
-    
+
 
 
 masks = createcolormasks(img, "Original Image", save=True)
