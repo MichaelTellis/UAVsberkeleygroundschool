@@ -1,6 +1,5 @@
 import cv2
 import numpy as np
-import matplotlib.pyplot as plt
 import sys
 
 filepath = sys.argv[1] if len(sys.argv) > 1 else "stopsign.png"
@@ -22,27 +21,23 @@ COLORSHSV = {
 def createcolormasks(image, title, save=False):
     hsv_image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
     masks = {}
-    masks_with_color = {}
+    
     #create color masks, currently hard coded for red, orange, yellow, green, blue, and purple
     for color, value in COLORSHSV.items():
-        
-
-        lower = np.array(value[0])
-        upper = np.array(value[1])
+        lower = np.array(value[0], dtype=np.uint8)
+        upper = np.array(value[1], dtype=np.uint8)
         masks[color] = cv2.inRange(hsv_image, lower, upper)
 
         #cv2.imshow(title, image)
     #handle red separately since it wraps around the hue spectrum
     masks["red"] = cv2.bitwise_or(masks.pop("red1"), masks.pop("red2"))
-    # set color to black where mask is not present
-    for color, mask in masks.items():
-        masks_with_color[color] = cv2.bitwise_and(image, image, mask=mask)
-        print(f"{color} mask created")
+    
     # save images if save is True
     if save:
-        for color, mask in masks_with_color.items():
+        for color, mask in masks.items():
+            mask_image = cv2.bitwise_and(image, image, mask=mask)
             filename = f"{color}_mask.jpg"
-            cv2.imwrite(filename, mask)
+            cv2.imwrite(filename, mask_image)
             print(f"Mask saved as {filename}")
     '''
     for color, mask in masks.items():
@@ -51,7 +46,8 @@ def createcolormasks(image, title, save=False):
     
     return masks
 
-def findcenter(image,color, mask):
+def findcenter_object(image,color, mask):
+    
 
     contours, hierarchy = cv2.findContours(
     mask,
@@ -77,15 +73,15 @@ def findcenter(image,color, mask):
     else:
         print(f"{color}: Object found but area is too small")
         return
+    
 
 
 masks = createcolormasks(img, "Original Image", save=True)
 
-for color in masks.keys():
-    findcenter(img, color, masks[color])
+for color, mask in masks.items():
+        findcenter_object(img, color, mask)
 
 cv2.imshow("Detected Objects", img)
-
 print("Masks created and saved.")
 cv2.waitKey(0)
 cv2.destroyAllWindows()
