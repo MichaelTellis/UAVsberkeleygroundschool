@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 import sys
 
-filepath = sys.argv[1] if len(sys.argv) > 1 else "panda.png"
+filepath = sys.argv[1] if len(sys.argv) > 1 else "stopsign.png"
 img = cv2.imread(filepath)
 
 COLORSHSV = {
