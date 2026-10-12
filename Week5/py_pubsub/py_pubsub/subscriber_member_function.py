@@ -10,7 +10,7 @@ class MinimalSubscriber(Node):
             String,"topic",self.listener_callback,10)
         self.subscription
     def listener_callback(self,msg):
-        self.get_logger().Info('I heard: "%s"' % msg.data)
+        self.get_logger().info('I heard: "%s"' % msg.data)
 
 def main(args=None):
     rclpy.init(args=args)
