@@ -1,0 +1,5 @@
+<description>Examples of minimal publisher/subscriber using rclpy</description>
+<maintainer email="michaeltellis792@gmail.com.com">Michael Tellis</maintainer>
+<license>Apache-2.0</license>
+<exec_depend>rclpy</exec_depend>
+<exec_depend>std_msgs</exec_depend>
